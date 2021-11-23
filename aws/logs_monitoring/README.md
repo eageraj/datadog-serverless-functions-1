@@ -1,18 +1,11 @@
----
-title: Datadog Forwarder
-kind: documentation
-dependencies: 
-  - "https://github.com/DataDog/datadog-serverless-functions/blob/master/aws/logs_monitoring/README.md"
-aliases:
-  - /serverless/troubleshooting/installing_the_forwarder/
-  - /serverless/forwarder/
----
+# Datadog Forwarder
 
 The Datadog Forwarder is an AWS Lambda function that ships logs, custom metrics, and traces from your environment to Datadog. The Forwarder can:
 
 - Forward CloudWatch, ELB, S3, CloudTrail, VPC, SNS, and CloudFront logs to Datadog
 - Forward S3 events to Datadog
 - Forward Kinesis data stream events to Datadog (only CloudWatch logs are supported)
+- Forward Cloudwatch logs delivered to S3 by Kinesis Firehose (only Cloudwatch logs are supported)
 - Forward custom metrics from AWS Lambda functions using CloudWatch logs
 - Forward traces from AWS Lambda functions using CloudWatch logs
 - Generate and submit enhanced Lambda metrics (`aws.lambda.enhanced.*`) parsed from the AWS REPORT log: duration, billed_duration, max_memory_used, timeouts, out_of_memory, and estimated_cost
@@ -50,7 +43,7 @@ Install the Forwarder using the Terraform resource [aws_cloudformation_stack](ht
 
 Datadog recommends creating two separate Terraform configurations:
 
-- Use the first one to store the [Datadog API key](https://app.datadoghq.com/organization-settings/api-keys) in the AWS Secrets Manager, and note down the secrets ARN from the output of apply.
+- Use the first one to store the Datadog API key in the AWS Secrets Manager, and note down the secrets ARN from the output of apply.
 - Then create another configuration for the forwarder and supply the secrets ARN through the `DdApiKeySecretArn` parameter.
 
 Separating the configurations of the API key and the forwarder means that you don't need to provide the Datadog API key when updating the forwarder.
@@ -103,10 +96,10 @@ resource "aws_cloudformation_stack" "datadog_forwarder" {
 If you can't install the Forwarder using the provided CloudFormation template, you can install the Forwarder manually following the steps below. Feel free to open an issue or pull request to let us know if there is anything we can improve to make the template work for you.
 
 1. Create a Python 3.7 Lambda function using `aws-dd-forwarder-<VERSION>.zip` from the latest [releases](https://github.com/DataDog/datadog-serverless-functions/releases).
-2. Save your [Datadog API key](https://app.datadoghq.com/organization-settings/api-keys) in AWS Secrets Manager, set environment variable `DD_API_KEY_SECRET_ARN` with the secret ARN on the Lambda function, and add the `secretsmanager:GetSecretValue` permission to the Lambda execution role.
+2. Save your Datadog API key in AWS Secrets Manager, set environment variable `DD_API_KEY_SECRET_ARN` with the secret ARN on the Lambda function, and add the `secretsmanager:GetSecretValue` permission to the Lambda execution role.
 3. If you need to forward logs from S3 buckets, add the `s3:GetObject` permission to the Lambda execution role.
 4. Set the environment variable `DD_ENHANCED_METRICS` to `false` on the Forwarder. This stops the Forwarder from generating enhanced metrics itself, but it will still forward custom metrics from other lambdas.
-5. Some AWS accounts are configured such that triggers will not automatically create resource-based policies allowing Cloudwatch log groups to invoke the forwarder.
+5. Some AWS accounts are configured such that triggers will not automatically create resoucrce-based policies allowing Cloudwatch log groups to invoke the forwarder.
    Please reference the [CloudWatchLogPermissions](https://github.com/DataDog/datadog-serverless-functions/blob/029bd46e5c6d4e8b1ae647ed3b4d1917ac3cd793/aws/logs_monitoring/template.yaml#L680) to see which permissions are required for the forwarder to be invoked by Cloudwatch Log Events.
 
 6. Configure [triggers](https://docs.datadoghq.com/integrations/amazon_web_services/?tab=allpermissions#send-aws-service-logs-to-datadog).
@@ -255,13 +248,13 @@ The Datadog Forwarder is signed by Datadog. If you would like to verify the inte
 ### Required
 
 `DdApiKey`
-: Your [Datadog API key](https://app.datadoghq.com/organization-settings/api-keys). This can be found in Datadog, Organization Settings > API Keys. The API Key is stored in AWS Secrets Manager. If you already have a Datadog API Key stored in Secrets Manager, use `DdApiKeySecretArn` instead.
+: Your Datadog API Key. This can be found in Datadog, under Integrations > APIs > API Keys. The API Key will be stored in AWS Secrets Manager. If you already have Datadog API Key stored in Secrets Manager, use `DdApiKeySecretArn` instead.
 
 `DdApiKeySecretArn`
 : The ARN of the secret storing the Datadog API key, if you already have it stored in Secrets Manager. You must store the secret as a plaintext, rather than a key-value pair.
 
 `DdSite`
-: The Datadog site that your metrics and logs will be sent to. Possible values are `datadoghq.com`, `datadoghq.eu`, `us3.datadoghq.com`, `us5.datadoghq.com`,  and `ddog-gov.com`.
+: The Datadog site that your metrics and logs will be sent to. Possible values are `datadoghq.com`, `datadoghq.eu`, `us3.datadoghq.com` and `ddog-gov.com`.
 
 ### Lambda function (optional)
 

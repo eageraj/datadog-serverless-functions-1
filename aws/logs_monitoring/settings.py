@@ -29,7 +29,7 @@ def get_env_var(envvar, default, boolean=False):
 ## The Datadog API key associated with your Datadog Account
 ## It can be found here:
 ##
-##   * Datadog US Site: https://app.datadoghq.com/organization-settings/api-keys
+##   * Datadog US Site: https://app.datadoghq.com/account/settings#api
 ##   * Datadog EU Site: https://app.datadoghq.eu/account/settings#api
 ##
 ## Must be set if one of the following is not set: DD_API_KEY_SECRET_ARN, DD_API_KEY_SSM_NAME, DD_KMS_API_KEY
@@ -217,18 +217,26 @@ DD_MULTILINE_LOG_REGEX_PATTERN = get_env_var(
     "DD_MULTILINE_LOG_REGEX_PATTERN", default=None
 )
 
+DD_LOG_REDACT_REGEX = get_env_var("DD_LOG_REDACT_REGEX", default=None)
+DD_LOG_REDACT_REPLACEMENT = get_env_var("DD_LOG_REDACT_REPLACEMENT", default="Log redacted")
+DD_FIREHOSE_SUBSCRIPTIONS = get_env_var("DD_FIREHOSE_SUBSCRIPTIONS", default=None)
+
 DD_SOURCE = "ddsource"
 DD_CUSTOM_TAGS = "ddtags"
 DD_SERVICE = "service"
 DD_HOST = "host"
-DD_FORWARDER_VERSION = "3.40.0"
+DD_FORWARDER_VERSION = "3.39.0"
 
 # Additional target lambda invoked async with event data
 DD_ADDITIONAL_TARGET_LAMBDAS = get_env_var("DD_ADDITIONAL_TARGET_LAMBDAS", default=None)
 
 DD_S3_BUCKET_NAME = get_env_var("DD_S3_BUCKET_NAME", default=None)
-DD_S3_CACHE_FILENAME = "cache.json"
-DD_S3_CACHE_LOCK_FILENAME = "cache.lock"
+DD_S3_CACHE_FILENAME = "cache_{}.json"
+DD_S3_CACHE_LOCK_FILENAME = "cache_{}.lock"
 
 DD_TAGS_CACHE_TTL_SECONDS = int(get_env_var("DD_TAGS_CACHE_TTL_SECONDS", default=300))
 DD_S3_CACHE_LOCK_TTL_SECONDS = 60
+
+DD_GET_TAGS_ROLENAME = get_env_var("DD_GET_TAGS_ROLENAME", default="")
+# Holds 'this' account
+DD_MY_ACCOUNT = ""
