@@ -33,6 +33,7 @@ type (
 )
 
 // Configure will set up the bindings
+//
 //export Configure
 func Configure(rootURL, apiKey string, InsecureSkipVerify bool) {
 	// Need to make a copy of these values, otherwise the underlying memory
@@ -57,6 +58,7 @@ func Configure(rootURL, apiKey string, InsecureSkipVerify bool) {
 }
 
 // returns 0 on success, 1 on error
+//
 //export ForwardTraces
 func ForwardTraces(serializedTraces string) int {
 	rawTracePayloads, err := unmarshalSerializedTraces(serializedTraces)
@@ -120,15 +122,13 @@ func aggregateTracePayloadsByEnv(tracePayloads []*pb.TracePayload) []*pb.TracePa
 			existingPayload = val
 		} else {
 			existingPayload = &pb.TracePayload{
-				HostName:     tracePayload.HostName,
-				Env:          tracePayload.Env,
-				Traces:       make([]*pb.APITrace, 0),
-				Transactions: make([]*pb.Span, 0),
+				HostName: tracePayload.HostName,
+				Env:      tracePayload.Env,
+				Traces:   make([]*pb.APITrace, 0),
 			}
 			lookup[key] = existingPayload
 		}
 		existingPayload.Traces = append(existingPayload.Traces, tracePayload.Traces...)
-		existingPayload.Transactions = append(existingPayload.Transactions, tracePayload.Transactions...)
 	}
 
 	newPayloads := make([]*pb.TracePayload, 0)
@@ -148,6 +148,7 @@ func sendTracesToIntake(tracePayloads []*pb.TracePayload) error {
 			hadErr = true
 		}
 	}
+
 	if hadErr {
 		return errors.New("Failed to send traces to intake")
 	}

@@ -7,7 +7,7 @@ set -e
 LAYER_NAME="Datadog-Forwarder"
 
 # Read the current version
-CURRENT_VERSION=$(grep -o 'Version: \d\+\.\d\+\.\d\+' template.yaml | cut -d' ' -f2)
+CURRENT_VERSION=$(grep -E -o 'Version: [0-9]+\.[0-9]+\.[0-9]+' template.yaml | cut -d' ' -f2)
 
 # Read the desired version
 if [ -z "$1" ]; then
@@ -35,7 +35,11 @@ fi
 
 ACCOUNT="${2}"
 if [ "$ACCOUNT" = "sandbox" ]; then
-    BUCKET="datadog-cloudformation-template-sandbox"
+    if [ "$DEPLOY_TO_SERVERLESS_SANDBOX" = "true" ] ; then
+        BUCKET="datadog-cloudformation-template-serverless-sandbox"
+    else
+        BUCKET="datadog-cloudformation-template-sandbox"
+    fi
 fi
 if [ "$ACCOUNT" = "prod" ]; then
     BUCKET="datadog-cloudformation-template"
@@ -45,9 +49,13 @@ function aws-login() {
     cfg=( "$@" )
     shift
     if [ "$ACCOUNT" = "prod" ] ; then
-        aws-vault exec prod-engineering --  ${cfg[@]}
+        aws-vault exec sso-prod-engineering --  ${cfg[@]}
     else
-        aws-vault exec sandbox-account-admin --  ${cfg[@]}
+        if [ "$DEPLOY_TO_SERVERLESS_SANDBOX" = "true" ] ; then
+            aws-vault exec sso-serverless-sandbox-account-admin --  ${cfg[@]}
+        else
+            aws-vault exec sso-sandbox-account-admin --  ${cfg[@]}
+        fi
     fi
 }
 
